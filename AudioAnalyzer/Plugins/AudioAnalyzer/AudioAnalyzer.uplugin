@@ -1,0 +1,21 @@
+{
+  "FileVersion": 3,
+  "Version": 1,
+  "VersionName": "0.0.1",
+  "FriendlyName": "Audio Analyzer",
+  "Description": "A plugin for analyzing audio and generating gameplay events.",
+  "Category": "Audio",
+  "CreatedBy": "Simen Wolters",
+  "CreatedByURL": "https://github.com/SimenWol",
+  "DocsURL": "",
+  "MarketplaceURL": "",
+  "SupportURL": "",
+  "EngineVersion": "5.5.4",
+  "Modules": [
+    {
+      "Name": "AudioAnalyzerCore",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ]
+}
