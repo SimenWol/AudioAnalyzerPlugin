@@ -3,6 +3,10 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "ConstantQNRT.h"
+#include "LoudnessNRT.h"
+#include "OnsetNRT.h"
+
 #include "AudioAnalyzerComponent.generated.h"
 
 // Forward Declarations
