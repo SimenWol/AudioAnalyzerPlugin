@@ -1,9 +1,11 @@
 #include "AudioAnalyzerComponent.h"
 #include "AudioAnalyzerManager.h"
 
+#include "Log.h"
+
 UAudioAnalyzerComponent::UAudioAnalyzerComponent()
 {
-    PrimaryComponentTick.bCanEverTick = false; // No need to be enabled for now as it's NRT
+    PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UAudioAnalyzerComponent::BeginPlay()
@@ -14,5 +16,19 @@ void UAudioAnalyzerComponent::BeginPlay()
     {
         AnalyzerManager = NewObject<UAudioAnalyzerManager>(this);
         AnalyzerManager->Initialize(SourceAudio);
+    }
+}
+
+// temporary test function
+void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    TimeElapsed += DeltaTime;
+
+    if (AnalyzerManager)
+    {
+        float Loudness = AnalyzerManager->GetLoudnessAtTime(TimeElapsed);
+        UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Loudness at %.2f = %.3f"), TimeElapsed, Loudness);
     }
 }
