@@ -6,6 +6,7 @@
 UAudioAnalyzerComponent::UAudioAnalyzerComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
+    TimeElapsed = 0.0f;
 }
 
 void UAudioAnalyzerComponent::BeginPlay()
@@ -15,7 +16,7 @@ void UAudioAnalyzerComponent::BeginPlay()
     if (SourceAudio)
     {
         AnalyzerManager = NewObject<UAudioAnalyzerManager>(this);
-        AnalyzerManager->Initialize(SourceAudio);
+        AnalyzerManager->InitializeAssets(LoudnessNRT, OnsetNRT, ConstantQNRT);
     }
 }
 

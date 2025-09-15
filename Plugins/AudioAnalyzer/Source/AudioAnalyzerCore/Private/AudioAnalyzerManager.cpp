@@ -1,38 +1,17 @@
 #include "AudioAnalyzerManager.h"
 #include "ConstantQNRT.h"
 #include "LoudnessNRT.h"
-#include "OnSetNRT.h"
-#include "Sound/SoundWave.h"
+#include "OnsetNRT.h"
 
 #include "Log.h"
 
-void UAudioAnalyzerManager::Initialize(USoundWave* Source)
+void UAudioAnalyzerManager::InitializeAssets(ULoudnessNRT* Loudness, UOnsetNRT* Onset, UConstantQNRT* ConstantQ)
 {
-    // TODO: just realised this is going to require a different 'manager' object *per* soundwave and/or actor. maybe not the best solution?
-    // temp test, variables should become editable
-    if (!Source) return;
+    // TODO: setting variables should become editable
 
-    ConstantQNRT = NewObject<UConstantQNRT>(this);
-    UConstantQNRTSettings* CQSettings = NewObject<UConstantQNRTSettings>();
-    
-    ConstantQNRT->Sound = Source;
-    ConstantQNRT->Settings = CQSettings;
-    CQSettings->AnalysisPeriod = 0.01f; // 100 samples per second
-    CQSettings->NumBands = 96;
-
-    LoudnessNRT = NewObject<ULoudnessNRT>(this);
-    ULoudnessNRTSettings* LoudnessSettings = NewObject<ULoudnessNRTSettings>();
-    
-    LoudnessNRT->Sound = Source;
-    LoudnessNRT->Settings = LoudnessSettings;
-    LoudnessSettings->AnalysisPeriod = 0.01f; // 100 samples per second
-    LoudnessSettings->CurveType = ELoudnessNRTCurveTypeEnum::A;
-    
-    OnsetNRT = NewObject<UOnsetNRT>(this);
-    UOnsetNRTSettings* OnsetSettings = NewObject<UOnsetNRTSettings>();
-    OnsetNRT->Sound = Source;
-    OnsetNRT->Settings = OnsetSettings;
-    OnsetSettings->Sensitivity = 0.5f;
+    LoudnessNRT = Loudness;
+    OnsetNRT = Onset;
+    ConstantQNRT = ConstantQ;
 }
 
 float UAudioAnalyzerManager::GetLoudnessAtTime(float TimeSeconds) const

@@ -5,14 +5,10 @@
 
 #include "AudioAnalyzerManager.generated.h"
 
-// Forward Declerations
+// Forward Declarations
 class UConstantQNRT;
-// class UConstantQNRTSettings;
 class ULoudnessNRT;
-// class ULoudnessNRTSettings;
 class UOnsetNRT;
-// class UOnsetNRTSettings;
-// class USoundWave;
 
 UCLASS(BlueprintType)
 class UAudioAnalyzerManager : public UObject
@@ -20,28 +16,20 @@ class UAudioAnalyzerManager : public UObject
     GENERATED_BODY()
 
 public:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    UConstantQNRT* ConstantQNRT;
-
-    // UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    // UConstantQNRTSettings* QNRTSettings;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    ULoudnessNRT* LoudnessNRT;
-
-    // UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    // ULoudnessNRTSettings* LoudnessNRTSettings;
-
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    UOnsetNRT* OnsetNRT;
-
-    // UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    // UOnsetNRTSettings* OnsetNRTSettings;
-
     UFUNCTION(BlueprintCallable, Category="AudioAnalyzerCore")
-    void Initialize(USoundWave* Source);
+    void InitializeAssets(ULoudnessNRT* Loudness, UOnsetNRT* OnSet, UConstantQNRT* ConstantQ);
 
     // Test function
     float GetLoudnessAtTime(float TimeSeconds) const;
     // float GetOnSetAtTime(float TimeSeconds, float Strength) const;
+
+private:
+    UPROPERTY()
+    UConstantQNRT* ConstantQNRT;
+
+    UPROPERTY()
+    ULoudnessNRT* LoudnessNRT;
+
+    UPROPERTY()
+    UOnsetNRT* OnsetNRT;
 };

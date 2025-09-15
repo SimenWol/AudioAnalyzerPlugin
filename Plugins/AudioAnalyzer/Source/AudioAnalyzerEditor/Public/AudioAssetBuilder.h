@@ -11,6 +11,21 @@ class ULoudnessNRT;
 class UOnsetNRT;
 class UConstantQNRT;
 
+USTRUCT(BlueprintType)
+struct FGeneratedNRTAssets
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    ULoudnessNRT* LoudnessNRT = nullptr;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UOnsetNRT* OnsetNRT = nullptr;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UConstantQNRT* ConstantQNRT = nullptr;
+};
+
 UCLASS(BlueprintType, Blueprintable)
 class UAudioAssetBuilder : public UObject
 {
@@ -18,7 +33,7 @@ class UAudioAssetBuilder : public UObject
 
 public:
     UFUNCTION(BlueprintCallable, CallInEditor, Category="AudioAnalyzerEditor")
-    void BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath);
+    FGeneratedNRTAssets BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath);
 
     // Builders
     ULoudnessNRT* BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);

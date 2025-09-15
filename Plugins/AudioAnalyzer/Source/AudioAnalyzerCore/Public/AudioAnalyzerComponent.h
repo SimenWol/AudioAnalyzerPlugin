@@ -8,6 +8,9 @@
 // Forward Declarations
 class UAudioAnalyzerManager;
 class USoundWave;
+class UConstantQNRT;
+class ULoudnessNRT;
+class UOnsetNRT;
 
 UCLASS(ClassGroup=(Audio), meta=(BlueprintSpawnableComponent))
 class UAudioAnalyzerComponent : public UActorComponent
@@ -19,6 +22,15 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
     USoundWave* SourceAudio;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
+    UConstantQNRT* ConstantQNRT;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
+    ULoudnessNRT* LoudnessNRT;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
+    UOnsetNRT* OnsetNRT;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
     class UAudioAnalyzerManager* AnalyzerManager;

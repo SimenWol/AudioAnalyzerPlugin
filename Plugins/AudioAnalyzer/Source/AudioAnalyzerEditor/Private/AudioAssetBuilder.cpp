@@ -17,20 +17,25 @@
 // #include "OnsetNRTFactory.h"
 // #include "ConstantQNRTFactory.h"
 
-void UAudioAssetBuilder::BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath)
+FGeneratedNRTAssets UAudioAssetBuilder::BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath)
 {
+    FGeneratedNRTAssets analysers;
+
     if (!SourceAudio)
     {
         UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("No SourceAudio, building assets cancelled."));
-        return;
+        return analysers;
     }
 
     FString BaseName = SourceAudio->GetName();
 
     // TODO: add bools to individually enable packaging certain analyzers.
-    BuildLoudnessAsset(SourceAudio, PackagePath, BaseName + TEXT("_LoudnessNRT"));
+    analysers.LoudnessNRT = BuildLoudnessAsset(SourceAudio, PackagePath, BaseName + TEXT("_LoudnessNRT"));
     // BuildOnsetAsset(SourceAudio, PackagePath, BaseName + TEXT("_OnsetNRT"));
     // BuildConstantQAsset(SourceAudio, PackagePath, BaseName + TEXT("_ConstantQNRT"));
+
+    UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("Successfully generated all NRT analysers."));
+    return analysers;
 }
 
 ULoudnessNRT* UAudioAssetBuilder::BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName)
