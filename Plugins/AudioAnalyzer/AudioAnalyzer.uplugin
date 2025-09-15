@@ -19,6 +19,14 @@
 			"AdditionalDependencies": [
 				"AudioSynesthesia"
 			]
+		},
+		{
+			"Name": "AudioAnalyzerEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"AudioSynesthesia"
+			]
 		}
 	],
 	"CanContainContent": false,
