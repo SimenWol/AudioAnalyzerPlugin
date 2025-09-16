@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AudioAnalyzerComponent.h"
+
 #include "IDetailCustomization.h"
 
 class IDetailLayoutBuilder;

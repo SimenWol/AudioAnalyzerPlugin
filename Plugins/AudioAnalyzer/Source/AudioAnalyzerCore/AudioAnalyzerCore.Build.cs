@@ -4,7 +4,16 @@ public class AudioAnalyzerCore : ModuleRules
 {
     public AudioAnalyzerCore(ReadOnlyTargetRules Target) : base(Target)
     {
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "AudioSynesthesia" });
+        PublicDependencyModuleNames.AddRange(
+            new string[]
+            {
+                "Core",
+                "CoreUObject",
+                "Engine",
+                "AudioSynesthesia"
+            }
+        );
+        
         PrivateDependencyModuleNames.AddRange(new string[] { });
     }
 }

@@ -1,5 +1,4 @@
 #include "AudioAnalyzerComponentCustomization.h"
-#include "AudioAnalyzerComponent.h"
 
 #include "DetailLayoutBuilder.h"
 #include "DetailCategoryBuilder.h"

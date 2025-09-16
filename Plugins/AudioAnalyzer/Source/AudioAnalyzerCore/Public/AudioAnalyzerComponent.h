@@ -17,7 +17,7 @@ class ULoudnessNRT;
 class UOnsetNRT;
 
 UCLASS(ClassGroup=(Audio), meta=(BlueprintSpawnableComponent))
-class UAudioAnalyzerComponent : public UActorComponent
+class AUDIOANALYZERCORE_API UAudioAnalyzerComponent : public UActorComponent
 {
     GENERATED_BODY()
 
