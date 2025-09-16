@@ -17,4 +17,4 @@ private:
     void OnSourceAudioChanged();
 
     TWeakObjectPtr<UAudioAnalyzerComponent> CachedComponent;
-}
+};
