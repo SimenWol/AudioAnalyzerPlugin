@@ -20,6 +20,9 @@ void UAudioAnalyzerComponent::BeginPlay()
             AnalyzerManager = NewObject<UAudioAnalyzerManager>(this);
         }
         
+        if (LoudnessNRT != nullptr) {UE_LOG(LogAudioAnalyzerCore, Log, TEXT("%f"), LoudnessNRT->Settings->AnalysisPeriod);}
+        else UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("NO LOUDNESSNRT :()"));
+
         AnalyzerManager->InitializeAssets(LoudnessNRT, OnsetNRT, ConstantQNRT);
     }
 }
@@ -62,13 +65,79 @@ void UAudioAnalyzerComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
 
             if (NewAssets.LoudnessNRT == nullptr) {UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("BuildAllAssets returned nullptr for LoudnessNRT"));}
 
-            // Assign to component
-            LoudnessNRT   = NewAssets.LoudnessNRT;
-            OnsetNRT      = NewAssets.OnsetNRT;
-            ConstantQNRT  = NewAssets.ConstantQNRT;
+            if (NewAssets.LoudnessNRT)
+            {
+                Modify(); // record transaction on *this* component
+    LoudnessNRT   = NewAssets.LoudnessNRT;
+    OnsetNRT      = NewAssets.OnsetNRT;
+    ConstantQNRT  = NewAssets.ConstantQNRT;
 
-            Modify();
-            MarkPackageDirty();
+    if (UObject* Outer = GetOuter())
+    {
+        Outer->MarkPackageDirty();
+    }
+
+    // Trigger editor refresh of the property field
+    FProperty* ChangedProp = FindFProperty<FProperty>(UAudioAnalyzerComponent::StaticClass(),
+        GET_MEMBER_NAME_CHECKED(UAudioAnalyzerComponent, LoudnessNRT));
+
+    if (ChangedProp)
+    {
+        FPropertyChangedEvent ChangedEvent(ChangedProp);
+        PostEditChangeProperty(ChangedEvent);
+    }
+
+    UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Assigned LoudnessNRT %s"), *LoudnessNRT->GetPathName());
+
+    if (LoudnessNRT)
+{
+    UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Final Assigned LoudnessNRT Path: %s"),
+        *LoudnessNRT->GetPathName());
+}
+
+
+                // FProperty* LoudnessProp = FindFProperty<FProperty>(UAudioAnalyzerComponent::StaticClass(), GET_MEMBER_NAME_CHECKED(UAudioAnalyzerComponent, LoudnessNRT));
+                // // PreEditChange(LoudnessProp);
+                // // LoudnessNRT = NewAssets.LoudnessNRT;
+                // // PostEditChange();
+
+                // // UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Assigned LoudnessNRT %s"), *LoudnessNRT->GetPathName());
+
+                // if (LoudnessProp)
+                // {
+                //     // Notify editor that we're about to change
+                //     PreEditChange(LoudnessProp);
+                
+                //     LoudnessNRT = NewAssets.LoudnessNRT;
+                
+                //     // Notify editor that we changed it
+                //     FPropertyChangedEvent ChangedEvent(LoudnessProp);
+                //     PostEditChangeProperty(ChangedEvent);
+                
+                //     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Assigned LoudnessNRT %s"),
+                //         *LoudnessNRT->GetPathName());
+                // }
+                // else UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("NO LOUDNESS PROP"));
+            }
+
+            // // Assign to component
+            // LoudnessNRT   = NewAssets.LoudnessNRT;
+            // OnsetNRT      = NewAssets.OnsetNRT;
+            // ConstantQNRT  = NewAssets.ConstantQNRT;
+
+            // if (LoudnessNRT != nullptr) {UE_LOG(LogAudioAnalyzerCore, Log, TEXT("%f"), LoudnessNRT->Settings->AnalysisPeriod);}
+
+            // if (AActor* Owner = GetOwner())
+            // {
+            //     Owner->Modify();
+            //     Owner->MarkPackageDirty();
+
+            //     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Marked package as dirty"));
+            // }
+            // else
+            // {
+            //     UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Did not save owner"));
+            // }
         }
         else
         {
@@ -77,8 +146,11 @@ void UAudioAnalyzerComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
             OnsetNRT     = nullptr;
             ConstantQNRT = nullptr;
 
-            Modify();
-            MarkPackageDirty();
+            if (AActor* Owner = GetOwner())
+            {
+                Owner->Modify();
+                Owner->MarkPackageDirty();
+            }
         }
     }
 }

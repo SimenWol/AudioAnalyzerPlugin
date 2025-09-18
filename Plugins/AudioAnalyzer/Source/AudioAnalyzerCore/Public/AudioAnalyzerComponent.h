@@ -27,14 +27,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
     USoundWave* SourceAudio;
 
-    UPROPERTY(VisibleAnywhere, Instanced, Category="AudioAnalyzerCore")
-    UConstantQNRT* ConstantQNRT;
-
-    UPROPERTY(VisibleAnywhere, Instanced, Category="AudioAnalyzerCore")
-    ULoudnessNRT* LoudnessNRT;
-
-    UPROPERTY(VisibleAnywhere, Instanced, Category="AudioAnalyzerCore")
-    UOnsetNRT* OnsetNRT;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore", meta=(AllowedClasses="/Script/AudioSynesthesia.ConstantQNRT"))
+    TObjectPtr<UConstantQNRT> ConstantQNRT;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore", meta=(AllowedClasses="/Script/AudioSynesthesia.LoudnessNRT"))
+    TObjectPtr<ULoudnessNRT> LoudnessNRT;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore", meta=(AllowedClasses="/Script/AudioSynesthesia.OnsetNRT"))
+    TObjectPtr<UOnsetNRT> OnsetNRT;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
     class UAudioAnalyzerManager* AnalyzerManager;

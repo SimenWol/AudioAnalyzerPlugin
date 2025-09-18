@@ -68,6 +68,8 @@ ULoudnessNRT* UAudioAssetBuilder::BuildLoudnessAsset(USoundWave* SourceAudio, co
         LoudnessAsset->Sound = SourceAudio;
         LoudnessAsset->Settings = Settings;
 
+        LoudnessAsset->SetFlags(RF_Public | RF_Standalone);
+
         FAssetRegistryModule::AssetCreated(LoudnessAsset);
         LoudnessAsset->MarkPackageDirty();
     }
