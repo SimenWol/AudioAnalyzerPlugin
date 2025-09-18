@@ -22,9 +22,7 @@ public class AudioAnalyzerEditor : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                "AssetTools",
-                "AssetRegistry",
-                "AudioSynesthesiaEditor"
+                //
             }
         );
     }

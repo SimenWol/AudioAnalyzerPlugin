@@ -14,6 +14,12 @@ public class AudioAnalyzerCore : ModuleRules
             }
         );
         
-        PrivateDependencyModuleNames.AddRange(new string[] { });
+        PrivateDependencyModuleNames.AddRange(new string[]
+            {
+                "AssetTools",
+                "AssetRegistry",
+                "AudioSynesthesiaEditor"
+            }
+        );
     }
 }

@@ -33,10 +33,10 @@ class UAudioAssetBuilder : public UObject
 
 public:
     UFUNCTION(BlueprintCallable, CallInEditor, Category="AudioAnalyzerEditor")
-    FGeneratedNRTAssets BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath);
+    static FGeneratedNRTAssets BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath);
 
     // Builders
-    ULoudnessNRT* BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
-    // UOnsetNRT* BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
-    // UConstantQNRT* BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
+    static ULoudnessNRT* BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
+    // UOnsetNRT* BuildOnsetAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
+    // UConstantQNRT* BuildConstantQAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
 };

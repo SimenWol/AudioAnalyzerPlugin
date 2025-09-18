@@ -23,7 +23,7 @@ FGeneratedNRTAssets UAudioAssetBuilder::BuildAllAssets(USoundWave* SourceAudio, 
 
     if (!SourceAudio)
     {
-        UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("No SourceAudio, building assets cancelled."));
+        UE_LOG(LogAudioAnalyzerCore, Log, TEXT("No SourceAudio, building assets cancelled."));
         return analysers;
     }
 
@@ -34,13 +34,19 @@ FGeneratedNRTAssets UAudioAssetBuilder::BuildAllAssets(USoundWave* SourceAudio, 
     // BuildOnsetAsset(SourceAudio, PackagePath, BaseName + TEXT("_OnsetNRT"));
     // BuildConstantQAsset(SourceAudio, PackagePath, BaseName + TEXT("_ConstantQNRT"));
 
-    UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("Successfully generated all NRT analysers."));
+    UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Successfully generated all NRT analysers."));
+
+    if (analysers.LoudnessNRT == nullptr) {UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("RUH ROH"));}
     return analysers;
 }
 
 ULoudnessNRT* UAudioAssetBuilder::BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName)
 {
-    if (!SourceAudio) return nullptr;
+    if (!SourceAudio)
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("No Source Audio present, returning nullptr."));
+        return nullptr;
+    }
 
     FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools");
 
@@ -65,6 +71,8 @@ ULoudnessNRT* UAudioAssetBuilder::BuildLoudnessAsset(USoundWave* SourceAudio, co
         FAssetRegistryModule::AssetCreated(LoudnessAsset);
         LoudnessAsset->MarkPackageDirty();
     }
+
+    UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Successfully created LoudnessNRTAnalyzer"));
 
     return LoudnessAsset;
 }
