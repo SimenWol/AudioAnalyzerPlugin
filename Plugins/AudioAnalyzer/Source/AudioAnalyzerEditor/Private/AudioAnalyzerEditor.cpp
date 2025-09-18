@@ -1,5 +1,4 @@
 #include "AudioAnalyzerEditor.h"
-#include "AudioAnalyzerComponentCustomization.h"
 
 #include "PropertyEditorModule.h"
 #include "Modules/ModuleManager.h"
