@@ -12,6 +12,8 @@
 
 // #include "AudioSynesthesiaNRT.h"
 #include "AudioSynesthesiaNRTFactory.h"
+// #include "AudioAnalyzerNRT.h"
+// #include "IAudioAnalyzerNRTInterface.h"
 #include "LoudnessNRT.h"
 // #include "LoudnessNRTFactory.h"
 // #include "OnsetNRTFactory.h"
@@ -60,13 +62,15 @@ ULoudnessNRT* UAudioAssetBuilder::BuildLoudnessAsset(USoundWave* SourceAudio, co
     ULoudnessNRT* LoudnessAsset = Cast<ULoudnessNRT>(NewAsset);
     if (LoudnessAsset)
     {    
-        ULoudnessNRTSettings* Settings = NewObject<ULoudnessNRTSettings>();
+        ULoudnessNRTSettings* Settings = NewObject<ULoudnessNRTSettings>(LoudnessAsset, ULoudnessNRTSettings::StaticClass(), NAME_None, RF_Public | RF_Standalone);
         
         Settings->AnalysisPeriod = 0.01f; // 100 samples per second
         Settings->CurveType = ELoudnessNRTCurveTypeEnum::A;
         
         LoudnessAsset->Sound = SourceAudio;
         LoudnessAsset->Settings = Settings;
+
+        // LoudnessAsset->AnalyzeAudio();
 
         LoudnessAsset->SetFlags(RF_Public | RF_Standalone);
 
