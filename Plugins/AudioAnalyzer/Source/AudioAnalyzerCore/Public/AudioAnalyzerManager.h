@@ -25,11 +25,11 @@ public:
 
 private:
     UPROPERTY()
-    UConstantQNRT* ConstantQNRT;
+    TObjectPtr<UConstantQNRT> ConstantQNRT;
 
     UPROPERTY()
-    ULoudnessNRT* LoudnessNRT;
+    TObjectPtr<ULoudnessNRT> LoudnessNRT;
 
     UPROPERTY()
-    UOnsetNRT* OnsetNRT;
+    TObjectPtr<UOnsetNRT> OnsetNRT;
 };

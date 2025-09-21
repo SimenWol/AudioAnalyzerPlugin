@@ -17,13 +17,13 @@ struct FGeneratedNRTAssets
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    ULoudnessNRT* LoudnessNRT = nullptr;
+    TObjectPtr<ULoudnessNRT> LoudnessNRT = nullptr;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UOnsetNRT* OnsetNRT = nullptr;
+    TObjectPtr<UOnsetNRT> OnsetNRT = nullptr;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UConstantQNRT* ConstantQNRT = nullptr;
+    TObjectPtr<UConstantQNRT> ConstantQNRT = nullptr;
 };
 
 UCLASS(BlueprintType, Blueprintable)

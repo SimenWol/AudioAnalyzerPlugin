@@ -25,7 +25,7 @@ public:
     UAudioAnalyzerComponent();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
-    USoundWave* SourceAudio;
+    TObjectPtr<USoundWave> SourceAudio;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore", meta=(AllowedClasses="/Script/AudioSynesthesia.ConstantQNRT"))
     TObjectPtr<UConstantQNRT> ConstantQNRT;
@@ -37,7 +37,7 @@ public:
     TObjectPtr<UOnsetNRT> OnsetNRT;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AudioAnalyzerCore")
-    class UAudioAnalyzerManager* AnalyzerManager;
+    TObjectPtr<UAudioAnalyzerManager> AnalyzerManager;
 
 protected:
     virtual void BeginPlay() override;
