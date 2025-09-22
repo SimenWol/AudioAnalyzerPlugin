@@ -24,6 +24,14 @@ void UAudioAnalyzerComponent::BeginPlay()
         else UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("NO LOUDNESSNRT :()"));
 
         AnalyzerManager->InitializeAssets(LoudnessNRT, OnsetNRT, ConstantQNRT);
+
+        // check for first 5 seconds
+        FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(0.0f, 5.0f, 0);
+
+        for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
+        {
+            UE_LOG(LogTemp, Log, TEXT("Onset at %f sec, strength %f"), Onsets.Timestamps[i], Onsets.Strengths[i]);
+        }
     }
 }
 
@@ -38,6 +46,11 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     {
         float Loudness = AnalyzerManager->GetLoudnessAtTime(TimeElapsed);
         UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Loudness at %.2f = %.3f"), TimeElapsed, Loudness);
+
+        TArray<float> Spectrum = AnalyzerManager->GetConstantQAtTime(TimeElapsed, 0);
+        UE_LOG(LogAudioAnalyzerCore, Log, TEXT("ConstantQSpectrum bins: %d"), Spectrum.Num());
+
+        //
     }
 }
 

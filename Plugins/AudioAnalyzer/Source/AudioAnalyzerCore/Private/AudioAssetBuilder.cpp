@@ -12,7 +12,8 @@
 
 // #include "AudioSynesthesiaNRT.h"
 #include "AudioSynesthesiaNRTFactory.h"
-// #include "AudioAnalyzerNRT.h"
+#include "IAudioAnalyzerInterface.h"
+#include "AudioAnalyzerNRT.h"
 // #include "IAudioAnalyzerNRTInterface.h"
 #include "LoudnessNRT.h"
 // #include "LoudnessNRTFactory.h"
@@ -64,13 +65,19 @@ ULoudnessNRT* UAudioAssetBuilder::BuildLoudnessAsset(USoundWave* SourceAudio, co
     {    
         ULoudnessNRTSettings* Settings = NewObject<ULoudnessNRTSettings>(LoudnessAsset, ULoudnessNRTSettings::StaticClass(), NAME_None, RF_Public | RF_Standalone);
         
+        // CreateDefaultSubobject<ULoudnessNRTSettings>(TEXT("DefaultLoudnessNRTSettings"));
         Settings->AnalysisPeriod = 0.01f; // 100 samples per second
-        Settings->CurveType = ELoudnessNRTCurveTypeEnum::A;
+        Settings->MinimumFrequency = 20.0f;
+        Settings->MaximumFrequency = 20000.0f;
+        Settings->CurveType = ELoudnessNRTCurveTypeEnum::D;
+        Settings->NoiseFloorDb = -60.0f;
         
         LoudnessAsset->Sound = SourceAudio;
         LoudnessAsset->Settings = Settings;
 
+        // TODO: move back to editor side and make it work properly ;-;
         // LoudnessAsset->AnalyzeAudio();
+        // LoudnessAsset->Analyze(LoudnessAsset->Sound);
 
         LoudnessAsset->SetFlags(RF_Public | RF_Standalone);
 
