@@ -35,8 +35,9 @@ public:
     UFUNCTION(BlueprintCallable, CallInEditor, Category="AudioAnalyzerEditor")
     static FGeneratedNRTAssets BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath);
 
+private:
     // Builders
     static ULoudnessNRT* BuildLoudnessAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
-    // UOnsetNRT* BuildOnsetAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
-    // UConstantQNRT* BuildConstantQAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
+    static UOnsetNRT* BuildOnsetAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
+    static UConstantQNRT* BuildConstantQAsset(USoundWave* SourceAudio, const FString& PackagePath, const FString& AssetName);
 };
