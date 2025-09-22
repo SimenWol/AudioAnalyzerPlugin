@@ -37,8 +37,7 @@ FGeneratedNRTAssets UAudioAssetBuilder::BuildAllAssets(USoundWave* SourceAudio, 
     analysers.ConstantQNRT = BuildConstantQAsset(SourceAudio, PackagePath, BaseName + TEXT("_ConstantQNRT"));
 
     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Successfully generated all NRT analysers."));
-
-    if (analysers.LoudnessNRT == nullptr) {UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("RUH ROH"));}
+    
     return analysers;
 }
 

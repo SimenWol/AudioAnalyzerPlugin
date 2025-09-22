@@ -3,36 +3,22 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 
-#include "AudioAssetBuilder.generated.h"
-
-// Forward Declerations
+// Forward Declarations
 class USoundWave;
 class ULoudnessNRT;
 class UOnsetNRT;
 class UConstantQNRT;
 
-USTRUCT(BlueprintType)
 struct FGeneratedNRTAssets
 {
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<ULoudnessNRT> LoudnessNRT = nullptr;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UOnsetNRT> OnsetNRT = nullptr;
-    
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TObjectPtr<UConstantQNRT> ConstantQNRT = nullptr;
 };
 
-UCLASS(BlueprintType, Blueprintable)
 class UAudioAssetBuilder : public UObject
 {
-    GENERATED_BODY()
-
 public:
-    UFUNCTION(BlueprintCallable, CallInEditor, Category="AudioAnalyzerEditor")
     static FGeneratedNRTAssets BuildAllAssets(USoundWave* SourceAudio, const FString& PackagePath);
 
 private:

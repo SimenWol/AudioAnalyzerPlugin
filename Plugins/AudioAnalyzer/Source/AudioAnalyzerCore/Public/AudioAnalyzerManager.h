@@ -10,9 +10,15 @@ class UConstantQNRT;
 class ULoudnessNRT;
 class UOnsetNRT;
 
+USTRUCT(BlueprintType)
 struct FOnsetData
 {
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<float> Timestamps;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<float> Strengths;
 };
 
@@ -26,9 +32,13 @@ public:
     void InitializeAssets(ULoudnessNRT* Loudness, UOnsetNRT* OnSet, UConstantQNRT* ConstantQ);
 
 public:
-    // Test function
+    UFUNCTION(BlueprintCallable, Category="AudioAnalyzerCore")
     float GetLoudnessAtTime(float TimeSeconds) const;
+
+    UFUNCTION(BlueprintCallable, Category="AudioAnalyzerCore")
     TArray<float> GetConstantQAtTime(float TimeSeconds, int32 ChannelIndex) const;
+
+    UFUNCTION(BlueprintCallable, Category="AudioAnalyzerCore")
     FOnsetData GetOnSetsBetweenTimes(float StartSeconds, float EndSeconds, int32 ChannelIndex) const;
 
 private:
