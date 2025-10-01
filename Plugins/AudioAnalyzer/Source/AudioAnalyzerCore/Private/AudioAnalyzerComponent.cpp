@@ -5,8 +5,8 @@
 
 UAudioAnalyzerComponent::UAudioAnalyzerComponent()
 {
-    PrimaryComponentTick.bCanEverTick = true;
-    TimeElapsed = 0.0f;
+    PrimaryComponentTick.bCanEverTick = false;
+    // TimeElapsed = 0.0f;
 }
 
 void UAudioAnalyzerComponent::BeginPlay()
@@ -20,18 +20,18 @@ void UAudioAnalyzerComponent::BeginPlay()
             AnalyzerManager = NewObject<UAudioAnalyzerManager>(this);
         }
         
-        if (LoudnessNRT != nullptr) {UE_LOG(LogAudioAnalyzerCore, Log, TEXT("%f"), LoudnessNRT->Settings->AnalysisPeriod);}
-        else UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("NO LOUDNESSNRT :()"));
-
         AnalyzerManager->InitializeAssets(LoudnessNRT, OnsetNRT, ConstantQNRT);
 
-        // check for first 5 seconds
-        FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(0.0f, 5.0f, 0);
+        // if (LoudnessNRT != nullptr) {UE_LOG(LogAudioAnalyzerCore, Log, TEXT("%f"), LoudnessNRT->Settings->AnalysisPeriod);}
+        // else UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("NO LOUDNESSNRT :()"));
 
-        for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
-        {
-            UE_LOG(LogTemp, Log, TEXT("Onset at %f sec, strength %f"), Onsets.Timestamps[i], Onsets.Strengths[i]);
-        }
+        // // check for first 5 seconds
+        // FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(0.0f, 5.0f, 0);
+
+        // for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
+        // {
+        //     UE_LOG(LogTemp, Log, TEXT("Onset at %f sec, strength %f"), Onsets.Timestamps[i], Onsets.Strengths[i]);
+        // }
     }
 }
 
@@ -40,18 +40,20 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    TimeElapsed += DeltaTime;
+    // Possibly more implementation later - mainly used for testing currently
 
-    if (AnalyzerManager)
-    {
-        float Loudness = AnalyzerManager->GetLoudnessAtTime(TimeElapsed);
-        UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Loudness at %.2f = %.3f"), TimeElapsed, Loudness);
+    // TimeElapsed += DeltaTime;
 
-        TArray<float> Spectrum = AnalyzerManager->GetConstantQAtTime(TimeElapsed, 0);
-        UE_LOG(LogAudioAnalyzerCore, Log, TEXT("ConstantQSpectrum bins: %d"), Spectrum.Num());
+    // if (AnalyzerManager)
+    // {
+    //     float Loudness = AnalyzerManager->GetLoudnessAtTime(TimeElapsed);
+    //     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Loudness at %.2f = %.3f"), TimeElapsed, Loudness);
 
-        //
-    }
+    //     TArray<float> Spectrum = AnalyzerManager->GetConstantQAtTime(TimeElapsed, 0);
+    //     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("ConstantQSpectrum bins: %d"), Spectrum.Num());
+
+    //     //
+    // }
 }
 
 

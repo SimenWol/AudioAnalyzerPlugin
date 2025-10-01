@@ -47,6 +47,6 @@ protected:
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-private:
-    float TimeElapsed;
+// private:
+//     float TimeElapsed;
 };
