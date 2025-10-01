@@ -5,7 +5,7 @@
 
 UAudioAnalyzerComponent::UAudioAnalyzerComponent()
 {
-    PrimaryComponentTick.bCanEverTick = false;
+    PrimaryComponentTick.bCanEverTick = true;
     // TimeElapsed = 0.0f;
 }
 
@@ -40,20 +40,19 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    // Possibly more implementation later - mainly used for testing currently
 
-    // TimeElapsed += DeltaTime;
+    // TODO: maybe schedule events as data is precomputed?
+    if (!AnalyzerManager || !SourceAudio) return;
 
-    // if (AnalyzerManager)
-    // {
-    //     float Loudness = AnalyzerManager->GetLoudnessAtTime(TimeElapsed);
-    //     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Loudness at %.2f = %.3f"), TimeElapsed, Loudness);
+    float CurrentTime = GetWorld()->GetTimeSeconds(); // TODO: possibly sync with AudioComponent playback
 
-    //     TArray<float> Spectrum = AnalyzerManager->GetConstantQAtTime(TimeElapsed, 0);
-    //     UE_LOG(LogAudioAnalyzerCore, Log, TEXT("ConstantQSpectrum bins: %d"), Spectrum.Num());
-
-    //     //
-    // }
+    // temp loudness
+    float NewLoudness = AnalyzerManager->GetLoudnessAtTime(CurrentTime);
+    if (FMath::Abs(NewLoudness - CachedLoudness) > LoudnessThreshold) // TODO: configurable threshold
+    {
+        AnalyzerManager->OnLoudnessChanged.Broadcast(NewLoudness);
+        CachedLoudness = NewLoudness;
+    }
 }
 
 

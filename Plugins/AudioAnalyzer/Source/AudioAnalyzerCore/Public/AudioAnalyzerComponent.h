@@ -47,6 +47,8 @@ protected:
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-// private:
-//     float TimeElapsed;
+private:
+    float CachedLoudness = 0.0f;
+    
+    float LoudnessThreshold = 0.05f;
 };
