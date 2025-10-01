@@ -46,6 +46,8 @@
 # Precompiled Assets
 SourceArt/**/*.png
 SourceArt/**/*.tga
+Content/__ExternalActors__/*
+Content/__ExternalObjects__/*
 
 # Binary Files
 Binaries/*
