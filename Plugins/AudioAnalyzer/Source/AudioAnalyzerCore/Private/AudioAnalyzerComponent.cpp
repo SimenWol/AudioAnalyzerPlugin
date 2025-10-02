@@ -23,16 +23,11 @@ void UAudioAnalyzerComponent::BeginPlay()
         
         AnalyzerManager->InitializeAssets(LoudnessNRT, OnsetNRT, ConstantQNRT);
 
-        // if (LoudnessNRT != nullptr) {UE_LOG(LogAudioAnalyzerCore, Log, TEXT("%f"), LoudnessNRT->Settings->AnalysisPeriod);}
-        // else UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("NO LOUDNESSNRT :()"));
-
-        // // check for first 5 seconds
-        // FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(0.0f, 5.0f, 0);
-
-        // for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
-        // {
-        //     UE_LOG(LogTemp, Log, TEXT("Onset at %f sec, strength %f"), Onsets.Timestamps[i], Onsets.Strengths[i]);
-        // }
+        UAudioComponent* AudioComp = GetOwner()->FindComponentByClass<UAudioComponent>();
+        if (AudioComp)
+        {
+            AudioComp->OnAudioPlaybackPercent.AddDynamic(this, &UAudioAnalyzerComponent::OnPlaybackPercentChanged);
+        }
     }
 }
 
@@ -45,7 +40,24 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     if (!AnalyzerManager || !SourceAudio) return;
 
     // Get audio time
-    float CurrentTime = GetWorld()->GetTimeSeconds();
+    float CurrentTime = 0.0f;
+
+    UAudioComponent* AudioComp = GetOwner()->FindComponentByClass<UAudioComponent>();
+    if (AudioComp /*&& AudioComp->IsPlaying()*/)
+    {
+        float SoundDuration = AudioComp->Sound->GetDuration();
+        CurrentTime = CachedPlaybackPercent * SoundDuration;
+        
+        
+        if (CurrentTime < LastTickTime)
+        {
+            LastBeatTime = -999.0f; // Reset lastbeattime
+        }
+    }
+    else
+    {
+        CurrentTime = GetWorld()->GetTimeSeconds();
+    }
 
     // Loudness detection
     float NewLoudness = AnalyzerManager->GetLoudnessAtTime(CurrentTime);
@@ -69,9 +81,6 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
             AnalyzerManager->OnBeatDetected.Broadcast(OnsetTime);
             LastBeatTime = OnsetTime;
         }
-        // if ispotentialbeat
-            // AnalyzerManager->OnBeatDetected.Broadcast(Onsets.Timestamps[i]);
-            // set lastbeattime to onsettime
     }
 
     LastTickTime = CurrentTime;
@@ -157,4 +166,9 @@ bool UAudioAnalyzerComponent::IsPotentialBeat(float OnsetStrength, float OnsetLo
     }
 
     return true;
+}
+
+void UAudioAnalyzerComponent::OnPlaybackPercentChanged(const USoundWave* PlayingSoundWave, float PlaybackPercent)
+{
+    CachedPlaybackPercent = PlaybackPercent;
 }

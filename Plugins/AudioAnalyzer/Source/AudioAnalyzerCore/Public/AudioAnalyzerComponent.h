@@ -50,7 +50,11 @@ protected:
 private:
     bool IsPotentialBeat(float OnsetStrength, float OnsetLoudness, float OnsetTime) const;
 
+    UFUNCTION()
+    void OnPlaybackPercentChanged(const USoundWave* PlayingSoundWave, float PlaybackPercent);
+
 private:
+    float CachedPlaybackPercent = 0.0f;
 
     // Loudness tracking
     float CachedLoudness = 0.0f;
