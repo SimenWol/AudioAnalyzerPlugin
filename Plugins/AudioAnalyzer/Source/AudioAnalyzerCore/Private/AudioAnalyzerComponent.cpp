@@ -53,6 +53,15 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
         AnalyzerManager->OnLoudnessChanged.Broadcast(NewLoudness);
         CachedLoudness = NewLoudness;
     }
+
+    // temp beat/onset - does not detect beats currently, just detects start of note. might need rename and a new event for beats specifically / different functionality?
+    FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(LastTickTime, CurrentTime, 0); // TODO: improve to not be on every tick
+    for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
+    {
+        AnalyzerManager->OnBeatDetected.Broadcast(Onsets.Timestamps[i]);
+    }
+
+    LastTickTime = CurrentTime;
 }
 
 

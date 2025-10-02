@@ -49,6 +49,7 @@ protected:
 
 private:
     float CachedLoudness = 0.0f;
+    float LastTickTime = 0.0f;
     
     float LoudnessThreshold = 0.05f;
 };
