@@ -24,8 +24,9 @@ struct FOnsetData
 
 // Delegates
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoudnessChangedSignature, float, Loudness);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeatDetectedSignature, float, TimeSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnsetDetectedSignature, float, TimeSeconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpectrumBandChangedSignature, int32, BandIndex, float, Magnitude);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeatDetectedSignature, float, TimeSeconds);
 
 UCLASS(BlueprintType)
 class UAudioAnalyzerManager : public UObject
@@ -53,10 +54,13 @@ public:
     FOnLoudnessChangedSignature OnLoudnessChanged;
 
     UPROPERTY(BlueprintAssignable, Category="AudioAnalyzerCore|Events")
-    FOnBeatDetectedSignature OnBeatDetected;
+    FOnsetDetectedSignature OnsetDetected;
 
     UPROPERTY(BlueprintAssignable, Category="AudioAnalyzerCore|Events")
     FOnSpectrumBandChangedSignature OnSpectrumBandChanged;
+
+    UPROPERTY(BlueprintAssignable, Category="AudioAnalyzerCore|Events")
+    FOnBeatDetectedSignature OnBeatDetected;
 
 private:
     UPROPERTY()
