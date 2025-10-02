@@ -1,5 +1,6 @@
 #include "AudioAnalyzerComponent.h"
 #include "AudioAnalyzerManager.h"
+#include "Components/AudioComponent.h"
 
 #include "Log.h"
 
@@ -40,13 +41,13 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-
     // TODO: maybe schedule events as data is precomputed?
     if (!AnalyzerManager || !SourceAudio) return;
 
-    float CurrentTime = GetWorld()->GetTimeSeconds(); // TODO: possibly sync with AudioComponent playback
+    // Get audio time
+    float CurrentTime = GetWorld()->GetTimeSeconds();
 
-    // temp loudness
+    // Loudness detection
     float NewLoudness = AnalyzerManager->GetLoudnessAtTime(CurrentTime);
     if (FMath::Abs(NewLoudness - CachedLoudness) > LoudnessThreshold) // TODO: configurable threshold
     {
@@ -54,11 +55,23 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
         CachedLoudness = NewLoudness;
     }
 
-    // temp beat/onset - does not detect beats currently, just detects start of note. might need rename and a new event for beats specifically / different functionality?
+    // temp beat/onset - TODO: onset event?
     FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(LastTickTime, CurrentTime, 0); // TODO: improve to not be on every tick
+    
     for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
     {
-        AnalyzerManager->OnBeatDetected.Broadcast(Onsets.Timestamps[i]);
+        float OnsetTime = Onsets.Timestamps[i];
+        float OnsetStrength = Onsets.Strengths[i];
+        float OnsetLoudness = AnalyzerManager->GetLoudnessAtTime(OnsetTime); // check
+
+        if (IsPotentialBeat(OnsetStrength, OnsetLoudness, OnsetTime))
+        {
+            AnalyzerManager->OnBeatDetected.Broadcast(OnsetTime);
+            LastBeatTime = OnsetTime;
+        }
+        // if ispotentialbeat
+            // AnalyzerManager->OnBeatDetected.Broadcast(Onsets.Timestamps[i]);
+            // set lastbeattime to onsettime
     }
 
     LastTickTime = CurrentTime;
@@ -133,3 +146,15 @@ void UAudioAnalyzerComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
     }
 }
 #endif
+
+bool UAudioAnalyzerComponent::IsPotentialBeat(float OnsetStrength, float OnsetLoudness, float OnsetTime) const
+{
+    if (OnsetTime - LastBeatTime < MinBeatInterval
+        || OnsetStrength < OnsetStrengthThreshold
+        || OnsetLoudness < BeatLoudnessThreshold)
+    {
+        return false;
+    }
+
+    return true;
+}
