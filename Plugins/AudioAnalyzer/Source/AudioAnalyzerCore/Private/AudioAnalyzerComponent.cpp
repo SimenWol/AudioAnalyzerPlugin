@@ -72,14 +72,14 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
     for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
     {
-        // Fire Onset event
-        AnalyzerManager->OnsetDetected.Broadcast(Onsets.Timestamps[i]); // TODO: switch out timestamp and/or add onset strength as output
-
-        // temp/wip beat detection
         float OnsetTime = Onsets.Timestamps[i];
         float OnsetStrength = Onsets.Strengths[i];
         float OnsetLoudness = AnalyzerManager->GetLoudnessAtTime(OnsetTime); // check
 
+        // Fire Onset event
+        AnalyzerManager->OnsetDetected.Broadcast(OnsetTime, OnsetStrength);
+
+        // temp/wip beat detection
         if (IsPotentialBeat(OnsetStrength, OnsetLoudness, OnsetTime))
         {
             AnalyzerManager->OnBeatDetected.Broadcast(OnsetTime);

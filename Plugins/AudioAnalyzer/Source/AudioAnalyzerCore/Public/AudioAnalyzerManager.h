@@ -24,7 +24,7 @@ struct FOnsetData
 
 // Delegates
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoudnessChangedSignature, float, Loudness);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnsetDetectedSignature, float, TimeSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnsetDetectedSignature, float, TimeSeconds, float, OnsetStrength);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpectrumBandChangedSignature, int32, BandIndex, float, Magnitude);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeatDetectedSignature, float, TimeSeconds);
 
