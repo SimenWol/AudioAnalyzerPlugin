@@ -42,16 +42,21 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     // Get audio time
     float CurrentTime = 0.0f;
 
+    // TODO: possibly improve this detection system
     UAudioComponent* AudioComp = GetOwner()->FindComponentByClass<UAudioComponent>();
     if (AudioComp /*&& AudioComp->IsPlaying()*/)
     {
         float SoundDuration = AudioComp->Sound->GetDuration();
-        CurrentTime = CachedPlaybackPercent * SoundDuration;
+        CurrentTime = CachedPlaybackPercent * SoundDuration;        
         
-        
+        // Reset as audio looped or restarted
         if (CurrentTime < LastTickTime)
         {
-            LastBeatTime = -999.0f; // Reset lastbeattime
+            LastBeatTime = -999.0f;
+            NextExpectedBeatTime = -999.0f;
+            RecentBeatIntervals.Empty();
+            RecentOnsetStrengths.Empty();
+            TempoConfidence = 0.0f;
         }
     }
     else
@@ -70,6 +75,19 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     // Onset & beat detection
     FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(LastTickTime, CurrentTime, 0); // TODO: improve to not be on every tick
 
+    // Update adaptive beat thresholds
+    for (float Strength : Onsets.Strengths)
+    {
+        RecentOnsetStrengths.Add(Strength);
+    }
+    if (RecentOnsetStrengths.Num() > MaxRecentOnsets)
+    {
+        RecentOnsetStrengths.RemoveAt(0, RecentOnsetStrengths.Num() - MaxRecentOnsets);
+    }
+
+    UpdateAdaptiveThresholds();
+
+    // Process onsets for beat detection
     for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
     {
         float OnsetTime = Onsets.Timestamps[i];
@@ -83,7 +101,9 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
         if (IsPotentialBeat(OnsetStrength, OnsetLoudness, OnsetTime))
         {
             AnalyzerManager->OnBeatDetected.Broadcast(OnsetTime);
+            UpdateTempoEstimate(OnsetTime);
             LastBeatTime = OnsetTime;
+            NextExpectedBeatTime = OnsetTime + BeatInterval;
         }
     }
 
@@ -162,14 +182,92 @@ void UAudioAnalyzerComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
 
 bool UAudioAnalyzerComponent::IsPotentialBeat(float OnsetStrength, float OnsetLoudness, float OnsetTime) const
 {
+    // Discard if too close after last beat
     if (OnsetTime - LastBeatTime < MinBeatInterval
-        || OnsetStrength < OnsetStrengthThreshold
-        || OnsetLoudness < BeatLoudnessThreshold)
+        /*|| OnsetStrength < OnsetStrengthThreshold
+        || OnsetLoudness < BeatLoudnessThreshold*/)
     {
         return false;
     }
 
-    return true;
+    // Check if we have an established tempo
+    bool HasTempoLock = TempoConfidence > 0.5f && RecentBeatIntervals.Num() >= 3;
+    if (HasTempoLock)
+    {
+        // Be more selective with tempo lock
+        float TimeSinceExpected = FMath::Abs(OnsetTime - NextExpectedBeatTime);
+        bool IsNearExpectedTime = TimeSinceExpected < BeatTimingTolerance;
+
+        // If near expected time / beat, lower thresholds
+        if (IsNearExpectedTime)
+        {
+            return OnsetStrength > AdaptiveOnsetThreshold * 0.7f && OnsetLoudness > AdaptiveLoudnessThreshold * 0.7f;
+        }
+        else
+        {
+            // Off-beat needs to be much stronger to register
+            return OnsetStrength > AdaptiveOnsetThreshold * 1.3f && OnsetLoudness > AdaptiveLoudnessThreshold * 1.2f;
+        }
+    }
+    else
+    {
+        // No established tempo - use standard thresholds to establish a tempo
+        return OnsetStrength > AdaptiveOnsetThreshold && OnsetLoudness > AdaptiveLoudnessThreshold;
+    }
+}
+
+void UAudioAnalyzerComponent::UpdateAdaptiveThresholds()
+{
+    if (RecentOnsetStrengths.Num() < 5) return;
+
+    // Calculate median and mean for robust threshold
+    TArray<float> SortedStrengths = RecentOnsetStrengths;
+    SortedStrengths.Sort();
+
+    float Median = SortedStrengths[SortedStrengths.Num() / 2];
+    float Sum = 0.0f;
+    for (float Strength : SortedStrengths) { Sum += Strength; }
+    float Mean = Sum / SortedStrengths.Num();
+
+    // Threshold is 60% between median / max
+    float Max = SortedStrengths.Last();
+    AdaptiveOnsetThreshold = FMath::Lerp(Median, Max, 0.6f);
+
+    // Clamp to keep reasonable bounds
+    AdaptiveOnsetThreshold = FMath::Clamp(AdaptiveOnsetThreshold, 0.2f, 0.8f);
+}
+
+void UAudioAnalyzerComponent::UpdateTempoEstimate(float BeatTime)
+{
+    if (LastBeatTime > 0.0f)
+    {
+        float Interval = BeatTime - LastBeatTime;
+
+        // Only use reasonable intervals
+        if (Interval >= MinBeatInterval && Interval <= MaxBeatInterval)
+        {
+            RecentBeatIntervals.Add(Interval);
+
+            if (RecentBeatIntervals.Num() > MaxRecentBeats)
+            {
+                RecentBeatIntervals.RemoveAt(0);
+            }
+
+            // Calculate median interval
+            if (RecentBeatIntervals.Num() >= 3)
+            {
+                TArray<float> SortedIntervals = RecentBeatIntervals;
+                SortedIntervals.Sort();
+
+                float MedianInterval = SortedIntervals[SortedIntervals.Num() / 2];
+                BeatInterval = MedianInterval;
+                EstimatedBPM = 60.0f / MedianInterval;
+
+                // Increase confidence with more beats
+                TempoConfidence = FMath::Min(1.0f, RecentBeatIntervals.Num() / 6.0f);
+            }
+        }
+    }
 }
 
 void UAudioAnalyzerComponent::OnPlaybackPercentChanged(const USoundWave* PlayingSoundWave, float PlaybackPercent)
