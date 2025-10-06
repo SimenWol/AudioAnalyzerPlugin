@@ -7,7 +7,6 @@
 UAudioAnalyzerComponent::UAudioAnalyzerComponent()
 {
     PrimaryComponentTick.bCanEverTick = true;
-    // TimeElapsed = 0.0f;
 }
 
 void UAudioAnalyzerComponent::BeginPlay()
@@ -44,7 +43,7 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     // Get audio time
     float CurrentTime = 0.0f;
 
-    // TODO: possibly improve this detection system
+    // TODO: possibly improve this audio time detection system
     UAudioComponent* AudioComp = GetOwner()->FindComponentByClass<UAudioComponent>();
     if (AudioComp /*&& AudioComp->IsPlaying()*/)
     {
@@ -89,23 +88,10 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
     UpdateAdaptiveThresholds();
 
-    // Check if we've missed a beat
     bool HasTempoLock = TempoConfidence > 0.5f && RecentBeatIntervals.Num() >= 3;
-    if (HasTempoLock && LastBeatTime > 0.0f)
-    {
-        float TimeSinceLastBeat = CurrentTime - LastBeatTime;
-        float MaxExpectedGap = BeatInterval * 1.5f;
 
-        if (TimeSinceLastBeat > MaxExpectedGap)
-        {
-            // We've missed beat(s) - resync
-            int32 MissedBeats = FMath::RoundToInt(TimeSinceLastBeat / BeatInterval);
-            NextExpectedBeatTime = LastBeatTime + (MissedBeats * BeatInterval);
-
-            // Reduce confidence slightly but don't reset entirely
-            TempoConfidence = FMath::Max(0.3f, TempoConfidence * 0.8f);
-        }
-    }
+    // Check if we've missed a beat
+    CheckForMissedBeat(HasTempoLock, CurrentTime);
 
     // Process onsets for beat detection
     for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
@@ -117,42 +103,28 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
         // Fire Onset event
         AnalyzerManager->OnsetDetected.Broadcast(OnsetTime, OnsetStrength);
 
-        // temp/wip beat detection
+        // Fire OnBeat event
         if (IsPotentialBeat(OnsetStrength, OnsetLoudness, OnsetTime))
         {
             AnalyzerManager->OnBeatDetected.Broadcast(OnsetTime);
             UpdateTempoEstimate(OnsetTime);
+
             LastBeatTime = OnsetTime;
             NextExpectedBeatTime = OnsetTime + BeatInterval;
             bBeatFiredThisTick = true;
+
             UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Beat Confidence & Estimated BPM: %f | %f"), TempoConfidence, EstimatedBPM);
         }
     }
 
     // Generate synthetic beat if we missed one
-    if (HasTempoLock && !bBeatFiredThisTick && bEnableSyntheticBeats
-        && TempoConfidence >= MinConfidenceForSyntheticBeats && NextExpectedBeatTime > 0.0f)
-    {
-        float TimeSinceExpected = CurrentTime - NextExpectedBeatTime;
-
-        // If past expect beat time by small margin -> fire synthetic beat + decrease confidence
-        if (TimeSinceExpected > 0.0f && TimeSinceExpected < BeatTimingTolerance * 1.5f)
-        {
-            AnalyzerManager->OnBeatDetected.Broadcast(NextExpectedBeatTime);
-            LastBeatTime = NextExpectedBeatTime;
-            NextExpectedBeatTime += BeatInterval;
-
-            TempoConfidence *= SyntheticBeatConfidenceDecay;
-
-            UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Synthetic Beat | Confidence: %f | BPM: %f"), TempoConfidence, EstimatedBPM);
-        }
-    }
+    GenerateSyntheticBeat(HasTempoLock, CurrentTime);
 
     LastTickTime = CurrentTime;
 }
 
 
-// temporary TODO: move to editor module
+// temporary | TODO: move to editor module
 #if WITH_EDITOR
 
 #include "AudioAssetBuilder.h"
@@ -310,6 +282,46 @@ void UAudioAnalyzerComponent::UpdateTempoEstimate(float BeatTime)
                 // Increase confidence with more beats
                 TempoConfidence = FMath::Min(1.0f, RecentBeatIntervals.Num() / 6.0f);
             }
+        }
+    }
+}
+
+void UAudioAnalyzerComponent::GenerateSyntheticBeat(bool bHasTempoLock, float CurrentTime)
+{
+    if (bHasTempoLock && !bBeatFiredThisTick && bEnableSyntheticBeats
+        && TempoConfidence >= MinConfidenceForSyntheticBeats && NextExpectedBeatTime > 0.0f)
+    {
+        float TimeSinceExpected = CurrentTime - NextExpectedBeatTime;
+
+        // If past expect beat time by small margin -> fire synthetic beat + decrease confidence
+        if (TimeSinceExpected > 0.0f && TimeSinceExpected < BeatTimingTolerance * 1.5f)
+        {
+            AnalyzerManager->OnBeatDetected.Broadcast(NextExpectedBeatTime);
+            LastBeatTime = NextExpectedBeatTime;
+            NextExpectedBeatTime += BeatInterval;
+
+            TempoConfidence *= SyntheticBeatConfidenceDecay;
+
+            UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Synthetic Beat | Confidence: %f | BPM: %f"), TempoConfidence, EstimatedBPM);
+        }
+    }
+}
+
+void UAudioAnalyzerComponent::CheckForMissedBeat(bool bHasTempoLock, float CurrentTime)
+{
+    if (bHasTempoLock && LastBeatTime > 0.0f)
+    {
+        float TimeSinceLastBeat = CurrentTime - LastBeatTime;
+        float MaxExpectedGap = BeatInterval * 1.5f;
+
+        if (TimeSinceLastBeat > MaxExpectedGap)
+        {
+            // We've missed beat(s) - resync
+            int32 MissedBeats = FMath::RoundToInt(TimeSinceLastBeat / BeatInterval);
+            NextExpectedBeatTime = LastBeatTime + (MissedBeats * BeatInterval);
+
+            // Reduce confidence slightly but don't reset entirely
+            TempoConfidence = FMath::Max(0.3f, TempoConfidence * 0.8f);
         }
     }
 }
