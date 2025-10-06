@@ -79,6 +79,9 @@ private:
     float BeatInterval = 60.0f / EstimatedBPM;
     float TempoConfidence = 0.0f;
 
+    // Synthetic beat events
+    bool bBeatFiredThisTick = false;
+
     // Detection paramters
     float MaxBeatInterval = 1.5f; // limit min BPM to ~40
     int32 MaxRecentOnsets = 50; // Rolling window size
@@ -90,12 +93,11 @@ public:
     int32 MaxRecentBeats = 8; // For tempo estimation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
     float MinBeatInterval = 0.25f; // limit max BPM to ~240
-    
-//     // Beat detection parameters
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
-//     float MinBeatInterval = 0.3f; // limits to ~200 BPM to avoid double-triggering. lowering theshold allows to go to higher BPM but may create double triggers
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
-//     float OnsetStrengthThreshold = 0.3f; // Minimum OnSet strength to consider
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
-//     float BeatLoudnessThreshold = 0.15f; // Minimum loudness for a beat
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    bool bEnableSyntheticBeats = true;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    float MinConfidenceForSyntheticBeats = 0.6f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    float SyntheticBeatConfidenceDecay = 0.95f;
 };

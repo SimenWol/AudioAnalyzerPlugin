@@ -39,6 +39,8 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     // TODO: maybe schedule events as data is precomputed?
     if (!AnalyzerManager || !SourceAudio) return;
 
+    bBeatFiredThisTick = false;
+
     // Get audio time
     float CurrentTime = 0.0f;
 
@@ -122,6 +124,27 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
             UpdateTempoEstimate(OnsetTime);
             LastBeatTime = OnsetTime;
             NextExpectedBeatTime = OnsetTime + BeatInterval;
+            bBeatFiredThisTick = true;
+            UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Beat Confidence & Estimated BPM: %f | %f"), TempoConfidence, EstimatedBPM);
+        }
+    }
+
+    // Generate synthetic beat if we missed one
+    if (HasTempoLock && !bBeatFiredThisTick && bEnableSyntheticBeats
+        && TempoConfidence >= MinConfidenceForSyntheticBeats && NextExpectedBeatTime > 0.0f)
+    {
+        float TimeSinceExpected = CurrentTime - NextExpectedBeatTime;
+
+        // If past expect beat time by small margin -> fire synthetic beat + decrease confidence
+        if (TimeSinceExpected > 0.0f && TimeSinceExpected < BeatTimingTolerance * 1.5f)
+        {
+            AnalyzerManager->OnBeatDetected.Broadcast(NextExpectedBeatTime);
+            LastBeatTime = NextExpectedBeatTime;
+            NextExpectedBeatTime += BeatInterval;
+
+            TempoConfidence *= SyntheticBeatConfidenceDecay;
+
+            UE_LOG(LogAudioAnalyzerCore, Log, TEXT("Synthetic Beat | Confidence: %f | BPM: %f"), TempoConfidence, EstimatedBPM);
         }
     }
 
@@ -239,7 +262,7 @@ bool UAudioAnalyzerComponent::IsPotentialBeat(float OnsetStrength, float OnsetLo
 
 void UAudioAnalyzerComponent::UpdateAdaptiveThresholds()
 {
-    if (RecentOnsetStrengths.Num() < 5) return;
+    if (RecentOnsetStrengths.Num() < 5) { return; }
 
     // Calculate median and mean for robust threshold
     TArray<float> SortedStrengths = RecentOnsetStrengths;
@@ -250,7 +273,7 @@ void UAudioAnalyzerComponent::UpdateAdaptiveThresholds()
     for (float Strength : SortedStrengths) { Sum += Strength; }
     float Mean = Sum / SortedStrengths.Num();
 
-    // Threshold is 60% between median / max
+    // Threshold is 60%+ between median / max
     float Max = SortedStrengths.Last();
     AdaptiveOnsetThreshold = FMath::Lerp(Median, Max, 0.6f);
 
