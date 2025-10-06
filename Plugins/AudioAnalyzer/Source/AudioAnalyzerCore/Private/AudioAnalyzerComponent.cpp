@@ -87,6 +87,24 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
     UpdateAdaptiveThresholds();
 
+    // Check if we've missed a beat
+    bool HasTempoLock = TempoConfidence > 0.5f && RecentBeatIntervals.Num() >= 3;
+    if (HasTempoLock && LastBeatTime > 0.0f)
+    {
+        float TimeSinceLastBeat = CurrentTime - LastBeatTime;
+        float MaxExpectedGap = BeatInterval * 1.5f;
+
+        if (TimeSinceLastBeat > MaxExpectedGap)
+        {
+            // We've missed beat(s) - resync
+            int32 MissedBeats = FMath::RoundToInt(TimeSinceLastBeat / BeatInterval);
+            NextExpectedBeatTime = LastBeatTime + (MissedBeats * BeatInterval);
+
+            // Reduce confidence slightly but don't reset entirely
+            TempoConfidence = FMath::Max(0.3f, TempoConfidence * 0.8f);
+        }
+    }
+
     // Process onsets for beat detection
     for (int32 i = 0; i < Onsets.Timestamps.Num(); ++i)
     {
@@ -183,9 +201,7 @@ void UAudioAnalyzerComponent::PostEditChangeProperty(FPropertyChangedEvent& Prop
 bool UAudioAnalyzerComponent::IsPotentialBeat(float OnsetStrength, float OnsetLoudness, float OnsetTime) const
 {
     // Discard if too close after last beat
-    if (OnsetTime - LastBeatTime < MinBeatInterval
-        /*|| OnsetStrength < OnsetStrengthThreshold
-        || OnsetLoudness < BeatLoudnessThreshold*/)
+    if (OnsetTime - LastBeatTime < MinBeatInterval)
     {
         return false;
     }
@@ -196,7 +212,12 @@ bool UAudioAnalyzerComponent::IsPotentialBeat(float OnsetStrength, float OnsetLo
     {
         // Be more selective with tempo lock
         float TimeSinceExpected = FMath::Abs(OnsetTime - NextExpectedBeatTime);
-        bool IsNearExpectedTime = TimeSinceExpected < BeatTimingTolerance;
+
+        // Check if we might be at a multiple of the beat interval
+        float NearestBeatMultiple = FMath::RoundToFloat(TimeSinceExpected / BeatInterval) * BeatInterval;
+        float DistanceToNearestBeat = FMath::Abs(TimeSinceExpected - NearestBeatMultiple);
+
+        bool IsNearExpectedTime = DistanceToNearestBeat < BeatTimingTolerance;
 
         // If near expected time / beat, lower thresholds
         if (IsNearExpectedTime)

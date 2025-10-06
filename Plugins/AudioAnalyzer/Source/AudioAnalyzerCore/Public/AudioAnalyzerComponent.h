@@ -80,13 +80,17 @@ private:
     float TempoConfidence = 0.0f;
 
     // Detection paramters
-    float MinBeatInterval = 0.25f; // limit max BPM to ~240
     float MaxBeatInterval = 1.5f; // limit min BPM to ~40
-    float BeatTimingTolerance = 0.12f; // how far off expected timing we allow (in seconds)
     int32 MaxRecentOnsets = 50; // Rolling window size
+    
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    float BeatTimingTolerance = 0.12f; // how far off expected timing we allow (in seconds)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
     int32 MaxRecentBeats = 8; // For tempo estimation
-
-// public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    float MinBeatInterval = 0.25f; // limit max BPM to ~240
+    
 //     // Beat detection parameters
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
 //     float MinBeatInterval = 0.3f; // limits to ~200 BPM to avoid double-triggering. lowering theshold allows to go to higher BPM but may create double triggers
