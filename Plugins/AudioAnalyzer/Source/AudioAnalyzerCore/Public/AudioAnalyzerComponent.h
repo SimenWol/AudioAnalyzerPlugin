@@ -73,6 +73,10 @@ private:
     // Loudness tracking
     float CachedLoudness = 0.0f;
     float LoudnessThreshold = 0.05f;
+
+    // ConstantQ tracking
+    TArray<float> CachedConstantQ;
+    float ConstantQThreshold = 0.1f;
     
     // Beat detection
     float LastTickTime = 0.0f;

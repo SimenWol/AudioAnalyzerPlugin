@@ -28,7 +28,7 @@ struct FOnsetData
 // Delegates
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoudnessChangedSignature, float, Loudness);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnsetDetectedSignature, float, TimeSeconds, float, OnsetStrength);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSpectrumBandChangedSignature, int32, BandIndex, float, Magnitude);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnConstantQChangedSignature, const TArray<float>&, ConstantQValues, int32, ChannelIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBeatDetectedSignature, float, TimeSeconds);
 
 /** A class that serves as a simple bridge / API between different modules and the audio analysis component. */
@@ -64,9 +64,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category="AudioAnalyzerCore|Events")
     FOnsetDetectedSignature OnsetDetected;
 
-    /** TBA */
+    /** Event that triggers whenever ConstantQ values change significantly on the selected audio. */
     UPROPERTY(BlueprintAssignable, Category="AudioAnalyzerCore|Events")
-    FOnSpectrumBandChangedSignature OnSpectrumBandChanged;
+    FOnConstantQChangedSignature OnConstantQChanged;
 
     /** Event that triggers each time a beat has been detected on the selected audio. */
     UPROPERTY(BlueprintAssignable, Category="AudioAnalyzerCore|Events")

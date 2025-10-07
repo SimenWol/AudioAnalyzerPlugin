@@ -43,7 +43,7 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
     // Get audio time
     float CurrentTime = 0.0f;
 
-    // TODO: possibly improve this audio time detection system
+    // TODO: improve this audio time detection system to allow user input / more flexibility; or at least make it more clear that they have to attach an audio component
     UAudioComponent* AudioComp = GetOwner()->FindComponentByClass<UAudioComponent>();
     if (AudioComp /*&& AudioComp->IsPlaying()*/)
     {
@@ -65,7 +65,7 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
         CurrentTime = GetWorld()->GetTimeSeconds();
     }
 
-    // Loudness detection
+    ///// Loudness detection /////
     float NewLoudness = AnalyzerManager->GetLoudnessAtTime(CurrentTime);
     if (FMath::Abs(NewLoudness - CachedLoudness) > LoudnessThreshold) // TODO: configurable threshold
     {
@@ -73,7 +73,7 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
         CachedLoudness = NewLoudness;
     }
 
-    // Onset & beat detection
+    ///// Onset & beat detection /////
     FOnsetData Onsets = AnalyzerManager->GetOnSetsBetweenTimes(LastTickTime, CurrentTime, 0); // TODO: improve to not be on every tick
 
     // Update adaptive beat thresholds
@@ -119,6 +119,40 @@ void UAudioAnalyzerComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
     // Generate synthetic beat if we missed one
     GenerateSyntheticBeat(HasTempoLock, CurrentTime);
+
+    ///// ConstantQ detection /////
+    TArray<float> NewConstantQ = AnalyzerManager->GetConstantQAtTime(CurrentTime, 0); // do we want configurable channels in general?
+
+    if (NewConstantQ.Num() > 0)
+    {
+        // Check for 'significant' changes in values
+        bool bSignificantChange = false;
+
+        if (CachedConstantQ.Num() != NewConstantQ.Num())
+        {
+            bSignificantChange = true;
+        }
+        else
+        {
+            // Compare values with threshold
+            for (int32 i = 0; i < NewConstantQ.Num(); ++i)
+            {
+                if (FMath::Abs(NewConstantQ[i] - CachedConstantQ[i]) > ConstantQThreshold)
+                {
+                    bSignificantChange = true;
+                    break;
+                }
+            }
+        }
+
+        if (bSignificantChange)
+        {
+            AnalyzerManager->OnConstantQChanged.Broadcast(NewConstantQ, 0);
+            CachedConstantQ = NewConstantQ;
+
+            // UE_LOG(LogAudioAnalyzerCore, Log, TEXT("ConstantQ event fired at CurrentTime: %f"), CurrentTime);
+        }
+    }
 
     LastTickTime = CurrentTime;
 }
