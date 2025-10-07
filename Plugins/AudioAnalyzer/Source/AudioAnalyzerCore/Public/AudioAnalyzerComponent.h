@@ -68,17 +68,12 @@ private:
     void OnPlaybackPercentChanged(const USoundWave* PlayingSoundWave, float PlaybackPercent);
 
 private:
+    // Cached data
     float CachedPlaybackPercent = 0.0f;
-
-    // Loudness tracking
     float CachedLoudness = 0.0f;
-    float LoudnessThreshold = 0.05f;
-
-    // ConstantQ tracking
     TArray<float> CachedConstantQ;
-    float ConstantQThreshold = 0.1f;
     
-    // Beat detection
+    // Beat detection //
     float LastTickTime = 0.0f;
     float LastBeatTime = -999.0f;
     float NextExpectedBeatTime = -999.0f;
@@ -102,23 +97,30 @@ private:
     int32 MaxRecentOnsets = 50; // Amount of recent Onset strengths saved for tempo estimation.
     
 public:
+    /** Amount that loudness needs to change with before firing another OnLoudness event. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|Loudness")
+    float LoudnessThreshold = 0.05f;
+    /** Amount that any ConstantQ band needs to change with before firing another OnConstantQ event. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|ConstantQ")
+    float ConstantQThreshold = 0.1f;
+
     /** How far off expected beat timing we allow an OnBeat event to trigger (in seconds). */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|BeatTracking")
     float BeatTimingTolerance = 0.12f;
     /** Minimum interval between beats (the lower the interval, the higher BPM is allowed but also introduces more margin for error). */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|BeatTracking")
     float MinBeatInterval = 0.25f;
     /** Maximum interval between beats (the higher the interval, the lower BPM is allowed but also introduces more margin for error). */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|BeatTracking")
     float MaxBeatInterval = 1.5f;
 
     /** Whether the analyzer should produce artificial beats when it cannot detect a beat but has detected a tempo. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|BeatTracking")
     bool bEnableSyntheticBeats = true;
     /** The minimum amount of confidence in tempo needed in order for a synthetic beat to be produced. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|BeatTracking")
     float MinConfidenceForSyntheticBeats = 0.6f;
     /** The amount by which the tempo confidence is multiplied each time a synthetic beat is produced. */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AudioAnalyzerCore|BeatTracking")
     float SyntheticBeatConfidenceDecay = 0.95f;
 };
