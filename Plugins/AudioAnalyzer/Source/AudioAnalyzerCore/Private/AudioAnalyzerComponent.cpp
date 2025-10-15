@@ -364,3 +364,63 @@ void UAudioAnalyzerComponent::OnPlaybackPercentChanged(const USoundWave* Playing
 {
     CachedPlaybackPercent = PlaybackPercent;
 }
+
+void UAudioAnalyzerComponent::OpenDebugWindow()
+{
+// We need to call the editor module function, so it'll only compile in editor builds
+#if WITH_EDITOR
+    if (!AnalyzerManager)
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Cannot open debug window: AudioAnalyzerManager is not initialized"));
+        return;
+    }
+
+    if (FModuleManager::Get().IsModuleLoaded("AudioAnalyzerEditor"))
+    {
+        // Use blueprint library function
+        if (UClass* LibraryClass = FindObject<UClass>(nullptr, TEXT("/Script/AudioAnalyzerEditor.AudioAnalyzerDebugLibrary")))
+        {
+            if (UFunction* OpenFunction = LibraryClass->FindFunctionByName(TEXT("OpenAudioAnalyzerDebugWindow")))
+            {
+                struct FOpenDebugWindowParams
+                {
+                    UAudioAnalyzerManager* Manager;
+                } Params;
+
+                Params.Manager = AnalyzerManager;
+                LibraryClass->GetDefaultObject()->ProcessEvent(OpenFunction, &Params);
+            }
+        }
+    }
+    else
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("AudioAnalyzerEditor module is not loaded."));
+    }
+#else
+    UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Debug window is only available in editor builds."));
+#endif
+}
+
+void UAudioAnalyzerComponent::CloseDebugWindow()
+{
+// We need to call the editor module function, so it'll only compile in editor builds
+#if WITH_EDITOR
+    if (FModuleManager::Get().IsModuleLoaded("AudioAnalyzerEditor"))
+    {
+        // Use blueprint library function
+        if (UClass* LibraryClass = FindObject<UClass>(nullptr, TEXT("/Script/AudioAnalyzerEditor.AudioAnalyzerDebugLibrary")))
+        {
+            if (UFunction* OpenFunction = LibraryClass->FindFunctionByName(TEXT("CloseAudioAnalyzerDebugWindow")))
+            {
+                LibraryClass->GetDefaultObject()->ProcessEvent(OpenFunction, nullptr);
+            }
+        }
+    }
+    else
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("AudioAnalyzerEditor module is not loaded."));
+    }
+#else
+    UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Debug window is only available in editor builds."));
+#endif
+}

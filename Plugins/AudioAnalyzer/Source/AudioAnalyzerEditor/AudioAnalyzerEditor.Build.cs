@@ -10,10 +10,7 @@ public class AudioAnalyzerEditor : ModuleRules
                 "Core",
                 "CoreUObject",
                 "Engine",
-                "UnrealEd",
                 "AudioSynesthesia",
-                "Slate",
-                "SlateCore",
                 "PropertyEditor",
                 "AudioAnalyzerCore"
             }
@@ -22,7 +19,9 @@ public class AudioAnalyzerEditor : ModuleRules
         PrivateDependencyModuleNames.AddRange(
             new string[]
             {
-                //
+                "Slate",
+                "SlateCore",
+                "UnrealEd"
             }
         );
     }
