@@ -1,5 +1,6 @@
 #include "AudioAnalyzerDebugWidget.h"
 #include "AudioAnalyzerManager.h"
+#include "AudioAnalyzerDebugProxy.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBorder.h"
@@ -64,28 +65,24 @@ void SAudioAnalyzerDebugWidget::Construct(const FArguments& InArgs)
 
 void SAudioAnalyzerDebugWidget::SetAnalyzerManager(UAudioAnalyzerManager* InManager)
 {
-    // TODO: look into how to do this because it does not support casting from S to U
-    
     // Unbind previous delegates
-    if (AnalyzerManager.IsValid())
+    if (AnalyzerManager.IsValid() && DelegateProxy)
     {
-        // AnalyzerManager->OnLoudnessChanged.RemoveDynamic(this, &SAudioAnalyzerDebugWidget::OnLoudnessChanged);
-        // AnalyzerManager->OnsetDetected.RemoveDynamic(this, &SAudioAnalyzerDebugWidget::OnOnsetDetected);
-        // AnalyzerManager->OnConstantQChanged.RemoveDynamic(this, &SAudioAnalyzerDebugWidget::OnConstantQChanged);
-        // AnalyzerManager->OnBeatDetected.RemoveDynamic(this, &SAudioAnalyzerDebugWidget::OnBeatDetected);
+        AnalyzerManager->OnLoudnessChanged.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnLoudnessChanged);
+        AnalyzerManager->OnsetDetected.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnOnsetDetected);
+        AnalyzerManager->OnConstantQChanged.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnConstantQChanged);
+        AnalyzerManager->OnBeatDetected.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnBeatDetected);
     }
     
     AnalyzerManager = InManager;
     
-    // Bind new delegates
-    if (AnalyzerManager.IsValid())
+    // Bind new delegates through the proxy
+    if (AnalyzerManager.IsValid() && DelegateProxy)
     {
-        // AudioComp->OnAudioPlaybackPercent.AddDynamic(this, &UAudioAnalyzerComponent::OnPlaybackPercentChanged);
-
-        // AnalyzerManager->OnLoudnessChanged.AddDynamic(this, &SAudioAnalyzerDebugWidget::OnLoudnessChanged);
-        // AnalyzerManager->OnsetDetected.AddDynamic(this, &SAudioAnalyzerDebugWidget::OnOnsetDetected);
-        // AnalyzerManager->OnConstantQChanged.AddDynamic(this, &SAudioAnalyzerDebugWidget::OnConstantQChanged);
-        // AnalyzerManager->OnBeatDetected.AddDynamic(this, &SAudioAnalyzerDebugWidget::OnBeatDetected);
+        AnalyzerManager->OnLoudnessChanged.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnLoudnessChanged);
+        AnalyzerManager->OnsetDetected.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnOnsetDetected);
+        AnalyzerManager->OnConstantQChanged.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnConstantQChanged);
+        AnalyzerManager->OnBeatDetected.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnBeatDetected);
     }
 }
 

@@ -4,6 +4,7 @@
 #include "Widgets/SCompoundWidget.h"
 
 class UAudioAnalyzerManager;
+class UAudioAnalyzerDebugProxy;
 
 struct FDebugEventEntry
 {
@@ -24,20 +25,22 @@ public:
 
     virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
 
+    // Event callbacks (should only be called by proxy)
+    void OnLoudnessChanged(float Loudness);
+    void OnOnsetDetected(float TimeSeconds, float Strength);
+    void OnConstantQChanged(const TArray<float>& Values, int32 ChannelIndex);
+    void OnBeatDetected(float TimeSeconds);
+
 private:
     TWeakObjectPtr<UAudioAnalyzerManager> AnalyzerManager;
+    TObjectPtr<UAudioAnalyzerDebugProxy> DelegateProxy;
+
     TArray<FDebugEventEntry> EventLog;
     int32 MaxLogEntries = 100;
 
     // Current values
     float CurrentLoudness = 0.0f;
     TArray<float> CurrentConstantQ;
-
-    // Event callbacks
-    void OnLoudnessChanged(float Loudness);
-    void OnOnsetDetected(float TimeSeconds, float Strength);
-    void OnConstantQChanged(const TArray<float>& Values, int32 ChannelIndex);
-    void OnBeatDetected(float TimeSeconds);
 
     void AddEventToLog(const FString& EventType, const FString& Details, const FLinearColor& Color);
 
