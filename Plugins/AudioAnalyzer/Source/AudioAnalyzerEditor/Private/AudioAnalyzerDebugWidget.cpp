@@ -5,9 +5,19 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/SBoxPanel.h"
+#include "Log.h"
 
 void SAudioAnalyzerDebugWidget::Construct(const FArguments& InArgs)
 {
+    // Create the delegate proxy UObject
+    DelegateProxy = NewObject<UAudioAnalyzerDebugProxy>();
+    DelegateProxy->SetWidget(SharedThis(this));
+
+    // Add to root so it doesn't get garbage collected
+    DelegateProxy->AddToRoot();
+    UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("DelegateProxy created and set."));
+
+    // Construct widget
     ChildSlot
     [
         SNew(SBorder)
@@ -63,11 +73,31 @@ void SAudioAnalyzerDebugWidget::Construct(const FArguments& InArgs)
     ];
 }
 
-void SAudioAnalyzerDebugWidget::SetAnalyzerManager(UAudioAnalyzerManager* InManager)
+SAudioAnalyzerDebugWidget::~SAudioAnalyzerDebugWidget()
 {
+    // Clean up delegates
+    if (AnalyzerManager.IsValid() && DelegateProxy)
+    {
+        AnalyzerManager->OnLoudnessChanged.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnLoudnessChanged);
+        AnalyzerManager->OnsetDetected.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnOnsetDetected);
+        AnalyzerManager->OnConstantQChanged.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnConstantQChanged);
+        AnalyzerManager->OnBeatDetected.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnBeatDetected);
+    }
+
+    if (DelegateProxy)
+    {
+        DelegateProxy->RemoveFromRoot();
+    }
+
+    UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("AudioAnalyzerDebugWidget destroyed."));
+}
+
+void SAudioAnalyzerDebugWidget::SetAnalyzerManager(UAudioAnalyzerManager* InManager)
+{    
     // Unbind previous delegates
     if (AnalyzerManager.IsValid() && DelegateProxy)
     {
+        UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("Unbinding previous manager delegates."));
         AnalyzerManager->OnLoudnessChanged.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnLoudnessChanged);
         AnalyzerManager->OnsetDetected.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnOnsetDetected);
         AnalyzerManager->OnConstantQChanged.RemoveDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnConstantQChanged);
@@ -76,13 +106,18 @@ void SAudioAnalyzerDebugWidget::SetAnalyzerManager(UAudioAnalyzerManager* InMana
     
     AnalyzerManager = InManager;
     
-    // Bind new delegates through the proxy
+    // Bind new delegates
     if (AnalyzerManager.IsValid() && DelegateProxy)
     {
+        UE_LOG(LogAudioAnalyzerEditor, Log, TEXT("Binding new manager delegates."));
         AnalyzerManager->OnLoudnessChanged.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnLoudnessChanged);
         AnalyzerManager->OnsetDetected.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnOnsetDetected);
         AnalyzerManager->OnConstantQChanged.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnConstantQChanged);
         AnalyzerManager->OnBeatDetected.AddDynamic(DelegateProxy, &UAudioAnalyzerDebugProxy::OnBeatDetected);
+    }
+    else
+    {
+        UE_LOG(LogAudioAnalyzerEditor, Warning, TEXT("Binding failed - Manager or Proxy is null."));
     }
 }
 
