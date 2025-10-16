@@ -44,8 +44,13 @@ private:
     float CurrentLoudness = 0.0f;
     TArray<float> CurrentConstantQ;
 
+    // Indicators
+    float BeatFlashIntensity = 0.0f;
+    float BeatFlashDecayRate = 1.5f;
+
     void AddEventToLog(const FString& EventType, const FString& Details, const FLinearColor& Color);
 
     FText GetLoudnessText() const;
     FText GetEventLogText() const;
+    FSlateColor GetBeatIndicatorColor() const;
 };

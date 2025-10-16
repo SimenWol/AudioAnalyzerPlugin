@@ -46,6 +46,25 @@ void SAudioAnalyzerDebugWidget::Construct(const FArguments& InArgs)
                 .Font(FCoreStyle::GetDefaultFontStyle("Regular", 12))
             ]
 
+            // Beat Indicator
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(0, 5)
+            [
+                SNew(SBorder)
+                .BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+                .BorderBackgroundColor(this, &SAudioAnalyzerDebugWidget::GetBeatIndicatorColor)
+                .Padding(20.0f)
+                .HAlign(HAlign_Center)
+                .VAlign(VAlign_Center)
+                [
+                    SNew(STextBlock)
+                    .Text(FText::FromString("BEAT INDICATOR"))
+                    .Font(FCoreStyle::GetDefaultFontStyle("Bold", 14))
+                    .Justification(ETextJustify::Center)
+                ]
+            ]
+
             // Event Log Header
             + SVerticalBox::Slot()
             .AutoHeight()
@@ -124,6 +143,12 @@ void SAudioAnalyzerDebugWidget::SetAnalyzerManager(UAudioAnalyzerManager* InMana
 void SAudioAnalyzerDebugWidget::Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime)
 {
     SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
+
+    // Decay beat flash intensity over time
+    if (BeatFlashIntensity > 0.0f)
+    {
+        BeatFlashIntensity = FMath::Max(0.0f, BeatFlashIntensity - (InDeltaTime * BeatFlashDecayRate));
+    }
 }
 
 void SAudioAnalyzerDebugWidget::OnLoudnessChanged(float Loudness)
@@ -145,6 +170,10 @@ void SAudioAnalyzerDebugWidget::OnConstantQChanged(const TArray<float>& Values, 
 
 void SAudioAnalyzerDebugWidget::OnBeatDetected(float TimeSeconds)
 {
+    // Flash beat indicator
+    BeatFlashIntensity = 1.0f;
+
+    // Add to log
     AddEventToLog("BEAT", FString::Printf(TEXT("Time: %.2fs"), TimeSeconds), FLinearColor::Red);
 }
 
@@ -181,4 +210,14 @@ FText SAudioAnalyzerDebugWidget::GetEventLogText() const
     }
     
     return FText::FromString(LogText);
+}
+
+FSlateColor SAudioAnalyzerDebugWidget::GetBeatIndicatorColor() const
+{
+    // Interpolate between neutral and beat colors based on flash intensity
+    // Change color values below if wanted
+    const FLinearColor NeutralColor = FLinearColor(0.8f, 0.8f, 0.8f, 1.0f);
+    const FLinearColor BeatColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
+
+    return FSlateColor(FLinearColor::LerpUsingHSV(NeutralColor, BeatColor, BeatFlashIntensity));
 }
