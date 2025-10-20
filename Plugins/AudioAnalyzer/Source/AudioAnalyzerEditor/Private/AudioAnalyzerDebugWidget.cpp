@@ -5,6 +5,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/SBoxPanel.h"
+#include "Widgets/Notifications/SProgressBar.h"
 #include "Log.h"
 
 void SAudioAnalyzerDebugWidget::Construct(const FArguments& InArgs)
@@ -39,11 +40,33 @@ void SAudioAnalyzerDebugWidget::Construct(const FArguments& InArgs)
             // Current Loudness
             + SVerticalBox::Slot()
             .AutoHeight()
-            .Padding(0, 5)
+            .Padding(0, 10, 0, 2)
+            [
+                SNew(STextBlock)
+                .Text(FText::FromString("Loudness:"))
+                .Font(FCoreStyle::GetDefaultFontStyle("Bold", 12))
+            ]
+
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(0, 2, 0, 2)
+            [
+                SNew(SBorder)
+                .BorderImage(FAppStyle::GetBrush("ToolPanel.GroupBorder"))
+                .Padding(2.0f)
+                [
+                    SNew(SProgressBar)
+                    .Percent(this, &SAudioAnalyzerDebugWidget::GetLoudnessPercent)
+                ]
+            ]
+
+            + SVerticalBox::Slot()
+            .AutoHeight()
+            .Padding(0, 0, 0, 5)
             [
                 SNew(STextBlock)
                 .Text(this, &SAudioAnalyzerDebugWidget::GetLoudnessText)
-                .Font(FCoreStyle::GetDefaultFontStyle("Regular", 12))
+                .Font(FCoreStyle::GetDefaultFontStyle("Regular", 10))
             ]
 
             // Beat Indicator
@@ -195,7 +218,7 @@ void SAudioAnalyzerDebugWidget::AddEventToLog(const FString& EventType, const FS
 
 FText SAudioAnalyzerDebugWidget::GetLoudnessText() const
 {
-    return FText::FromString(FString::Printf(TEXT("Current Loudness: %.2f dB"), CurrentLoudness));
+    return FText::FromString(FString::Printf(TEXT("%.2f dB (%.1f%%)"), CurrentLoudness, CurrentLoudness * 100.0f));
 }
 
 FText SAudioAnalyzerDebugWidget::GetEventLogText() const
@@ -220,4 +243,10 @@ FSlateColor SAudioAnalyzerDebugWidget::GetBeatIndicatorColor() const
     const FLinearColor BeatColor = FLinearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
     return FSlateColor(FLinearColor::LerpUsingHSV(NeutralColor, BeatColor, BeatFlashIntensity));
+}
+
+TOptional<float> SAudioAnalyzerDebugWidget::GetLoudnessPercent() const
+{
+    // Clamp between 0 and 1 just to be safe, even though input should already be normalized - TODO: preferable send non-normalized dB values to debug widget
+    return TOptional<float>(FMath::Clamp(CurrentLoudness, 0.0f, 1.0f));
 }

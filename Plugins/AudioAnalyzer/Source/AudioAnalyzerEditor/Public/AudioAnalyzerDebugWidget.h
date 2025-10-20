@@ -53,4 +53,7 @@ private:
     FText GetLoudnessText() const;
     FText GetEventLogText() const;
     FSlateColor GetBeatIndicatorColor() const;
+
+    // Loudness bar
+    TOptional<float> GetLoudnessPercent() const;
 };
