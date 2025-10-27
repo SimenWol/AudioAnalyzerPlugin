@@ -270,17 +270,14 @@ void UAudioAnalyzerComponent::UpdateAdaptiveThresholds()
 {
     if (RecentOnsetStrengths.Num() < 5) { return; }
 
-    // Calculate median and mean for robust threshold
+    // Calculate median for adaptive threshold
     TArray<float> SortedStrengths = RecentOnsetStrengths;
     SortedStrengths.Sort();
 
     float Median = SortedStrengths[SortedStrengths.Num() / 2];
-    float Sum = 0.0f;
-    for (float Strength : SortedStrengths) { Sum += Strength; }
-    float Mean = Sum / SortedStrengths.Num();
+    float Max = SortedStrengths.Last();
 
     // Threshold is 60%+ between median / max
-    float Max = SortedStrengths.Last();
     AdaptiveOnsetThreshold = FMath::Lerp(Median, Max, 0.6f);
 
     // Clamp to keep reasonable bounds
