@@ -67,6 +67,19 @@ private:
     UFUNCTION()
     void OnPlaybackPercentChanged(const USoundWave* PlayingSoundWave, float PlaybackPercent);
 
+public:
+    /** Opens the debug window for this component's analyzer manager (Editor only). */
+    UFUNCTION(BlueprintCallable, Category="AudioAnalyzer|Debug", meta=(DevelopmentOnly))
+    void OpenDebugWindow();
+
+    /** Opens the debug window for this component's analyzer manager (Editor only). */
+    UFUNCTION(BlueprintCallable, Category="AudioAnalyzer|Debug", meta=(DevelopmentOnly))
+    void CloseDebugWindow();
+
+    /** Gets the analyzer manager used by this component. */
+    UFUNCTION(BlueprintPure, Category="AudioAnalyzer")
+    UAudioAnalyzerManager* GetAnalyzerManager() const { return AnalyzerManager; }
+
 private:
     // Cached data
     float CachedPlaybackPercent = 0.0f;

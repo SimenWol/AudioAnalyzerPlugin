@@ -270,17 +270,14 @@ void UAudioAnalyzerComponent::UpdateAdaptiveThresholds()
 {
     if (RecentOnsetStrengths.Num() < 5) { return; }
 
-    // Calculate median and mean for robust threshold
+    // Calculate median for adaptive threshold
     TArray<float> SortedStrengths = RecentOnsetStrengths;
     SortedStrengths.Sort();
 
     float Median = SortedStrengths[SortedStrengths.Num() / 2];
-    float Sum = 0.0f;
-    for (float Strength : SortedStrengths) { Sum += Strength; }
-    float Mean = Sum / SortedStrengths.Num();
+    float Max = SortedStrengths.Last();
 
     // Threshold is 60%+ between median / max
-    float Max = SortedStrengths.Last();
     AdaptiveOnsetThreshold = FMath::Lerp(Median, Max, 0.6f);
 
     // Clamp to keep reasonable bounds
@@ -363,4 +360,64 @@ void UAudioAnalyzerComponent::CheckForMissedBeat(bool bHasTempoLock, float Curre
 void UAudioAnalyzerComponent::OnPlaybackPercentChanged(const USoundWave* PlayingSoundWave, float PlaybackPercent)
 {
     CachedPlaybackPercent = PlaybackPercent;
+}
+
+void UAudioAnalyzerComponent::OpenDebugWindow()
+{
+// We need to call the editor module function, so it'll only compile in editor builds
+#if WITH_EDITOR
+    if (!AnalyzerManager)
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Cannot open debug window: AudioAnalyzerManager is not initialized"));
+        return;
+    }
+
+    if (FModuleManager::Get().IsModuleLoaded("AudioAnalyzerEditor"))
+    {
+        // Use blueprint library function
+        if (UClass* LibraryClass = FindObject<UClass>(nullptr, TEXT("/Script/AudioAnalyzerEditor.AudioAnalyzerDebugLibrary")))
+        {
+            if (UFunction* OpenFunction = LibraryClass->FindFunctionByName(TEXT("OpenAudioAnalyzerDebugWindow")))
+            {
+                struct FOpenDebugWindowParams
+                {
+                    UAudioAnalyzerManager* Manager;
+                } Params;
+
+                Params.Manager = AnalyzerManager;
+                LibraryClass->GetDefaultObject()->ProcessEvent(OpenFunction, &Params);
+            }
+        }
+    }
+    else
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("AudioAnalyzerEditor module is not loaded."));
+    }
+#else
+    UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Debug window is only available in editor builds."));
+#endif
+}
+
+void UAudioAnalyzerComponent::CloseDebugWindow()
+{
+// We need to call the editor module function, so it'll only compile in editor builds
+#if WITH_EDITOR
+    if (FModuleManager::Get().IsModuleLoaded("AudioAnalyzerEditor"))
+    {
+        // Use blueprint library function
+        if (UClass* LibraryClass = FindObject<UClass>(nullptr, TEXT("/Script/AudioAnalyzerEditor.AudioAnalyzerDebugLibrary")))
+        {
+            if (UFunction* OpenFunction = LibraryClass->FindFunctionByName(TEXT("CloseAudioAnalyzerDebugWindow")))
+            {
+                LibraryClass->GetDefaultObject()->ProcessEvent(OpenFunction, nullptr);
+            }
+        }
+    }
+    else
+    {
+        UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("AudioAnalyzerEditor module is not loaded."));
+    }
+#else
+    UE_LOG(LogAudioAnalyzerCore, Warning, TEXT("Debug window is only available in editor builds."));
+#endif
 }
